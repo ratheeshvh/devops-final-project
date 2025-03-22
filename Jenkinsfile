@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Clone the repository
-                git branch: 'main', url: 'https://github.com/your-repo/your-project.git'
+                git branch: 'main', url: 'https://github.com/ratheeshvh/devops-final-project.git'
             }
         }
 
@@ -19,13 +19,13 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 script {
-                    def imageName = 'your-docker-repo/your-app:latest'
+                    def imageName = 'ratheesh510vh/testops'
 
                     // Build Docker image
                     sh "docker build -t ${imageName} ."
 
                     // Push Docker image to repository
-                    withDockerRegistry([credentialsId: 'docker-credentials-id', url: 'https://index.docker.io/v1/']) {
+                    withDockerRegistry([credentialsId: 'docker-hub-creds', url: 'https://index.docker.io/v1/']) {
                         sh "docker push ${imageName}"
                     }
                 }
