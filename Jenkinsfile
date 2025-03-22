@@ -14,12 +14,12 @@ pipeline {
             }
         }
 
-        stage('Install Node.js') {
+        stage('Ensure Node.js Installed') {
             steps {
-                echo 'Ensuring Node.js is installed...'
+                echo 'Checking if Node.js and npm are installed...'
                 sh '''
-                if ! command -v npm &> /dev/null; then
-                    echo "Node.js and npm are not installed. Installing Node.js..."
+                if ! command -v node &> /dev/null; then
+                    echo "Node.js is not installed. Installing..."
                     curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
                     sudo apt-get install -y nodejs
                 else
