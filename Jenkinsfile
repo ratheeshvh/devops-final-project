@@ -1,17 +1,23 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = 'ratheesh510vh/testops' // Base image name
+        DOCKER_CREDENTIALS_ID = 'docker-hub-creds' // Docker Hub credentials ID
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                // Clone the repository
+                echo 'Checking out the repository...'
                 git branch: 'main', url: 'https://github.com/ratheeshvh/devops-final-project.git'
             }
         }
 
         stage('Build') {
             steps {
-                // Run the build.sh script
+                echo 'Running build script...'
+                sh 'chmod +x build.sh' // Ensure the script is executable
                 sh './build.sh'
             }
         }
@@ -19,14 +25,16 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 script {
-                    def imageName = 'ratheesh510vh/testops'
+                    def dockerTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}" // Use Jenkins build number as tag
+                    echo "Building Docker image: ${dockerTag}"
 
                     // Build Docker image
-                    sh "docker build -t ${imageName} ."
+                    sh "docker build -t ${dockerTag} ."
 
-                    // Push Docker image to repository
-                    withDockerRegistry([credentialsId: 'docker-hub-creds', url: 'https://index.docker.io/v1/']) {
-                        sh "docker push ${imageName}"
+                    echo "Pushing Docker image: ${dockerTag}"
+                    // Push Docker image to Docker Hub
+                    withDockerRegistry([credentialsId: DOCKER_CREDENTIALS_ID, url: 'https://index.docker.io/v1/']) {
+                        sh "docker push ${dockerTag}"
                     }
                 }
             }
@@ -34,9 +42,19 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                // Run the deploy.sh script
+                echo 'Running deployment script...'
+                sh 'chmod +x deploy.sh' // Ensure the script is executable
                 sh './deploy.sh'
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check the logs for more details.'
         }
     }
 }
