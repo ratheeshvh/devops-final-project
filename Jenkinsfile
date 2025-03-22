@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'ratheesh510vh/testops' // Base image name
-        DOCKER_CREDENTIALS_ID = 'docker-hub-creds' // Docker Hub credentials ID
+        IMAGE_NAME = 'ratheesh510vh/testops'  // Base image name
+        DOCKER_CREDENTIALS_ID = 'docker-hub-creds'  // Docker Hub credentials ID
     }
 
     stages {
@@ -14,10 +14,25 @@ pipeline {
             }
         }
 
+        stage('Install Node.js') {
+            steps {
+                echo 'Ensuring Node.js is installed...'
+                sh '''
+                if ! command -v npm &> /dev/null; then
+                    echo "Node.js and npm are not installed. Installing Node.js..."
+                    curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+                    sudo apt-get install -y nodejs
+                else
+                    echo "Node.js is already installed."
+                fi
+                '''
+            }
+        }
+
         stage('Build') {
             steps {
                 echo 'Running build script...'
-                sh 'chmod +x build.sh' // Ensure the script is executable
+                sh 'chmod +x build.sh'  // Ensure the script is executable
                 sh './build.sh'
             }
         }
@@ -25,7 +40,7 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 script {
-                    def dockerTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}" // Use Jenkins build number as tag
+                    def dockerTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"  // Use Jenkins build number as tag
                     echo "Building Docker image: ${dockerTag}"
 
                     // Build Docker image
@@ -43,7 +58,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Running deployment script...'
-                sh 'chmod +x deploy.sh' // Ensure the script is executable
+                sh 'chmod +x deploy.sh'  // Ensure the script is executable
                 sh './deploy.sh'
             }
         }
